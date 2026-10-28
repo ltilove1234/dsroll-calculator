@@ -153,9 +153,9 @@
   var fig = { k: 1, cx: 175, cy: 120, last: null };
   var grooveDef = {
     inputs: ['od', 'ang', 'lines', 'blade'],
-    blank: function () { return { od: '', ang: '', lines: '', blade: '' }; },
+    blank: function () { return { od: '', ang: '', lines: '', blade: '', pat: 'L' }; },
     compute: function (c, s) {
-      fig.last = { c: c, D: n(s.od), deg: n(s.ang), Z: n(s.lines), B: n(s.blade) };
+      fig.last = { c: c, D: n(s.od), deg: n(s.ang), Z: n(s.lines), B: n(s.blade), pat: s.pat || 'L' };
       renderFig();
     }
   };
@@ -163,7 +163,7 @@
   /* 홈 가공 롤 그림 계산 (측면도). k = 확대 배율.
      좌표는 그림 단위(가로 350 × 세로 240)이고, 글자·눈금 크기는 1/k 로 줄여서
      확대해도 화면에서는 같은 크기로 보이게 합니다. */
-  function grooveGeometry(D, deg, Z, B, k) {
+  function grooveGeometry(D, deg, Z, B, k, refX) {
     k = k || 1;
     var u = 1 / k;
     var th = deg * Math.PI / 180;
@@ -175,7 +175,7 @@
     var P = function (x, y) { return r1(x) + ' ' + r1(y); };
     var g = {
       ok: ok, A: A, Dg: Dg, E: E, C: C, Cr: Cr, V: V, drawable: ok && deg < 89, u: u,
-      groove: 'M0 0', thin: false, axial: 'M0 0', axialOk: false, axialOnBody: k >= 1.5,
+      groove: 'M0 0', thin: false, axial: 'M0 0', axialOk: false, axialOnBody: true,
       dX: 0, dY: 0, eX: 0, eY: 0, aX: 0, aY: 0, dShow: false,
       perp: 'M0 0', perpOk: false, cLX: 0, cLY: 0, bLX: 0, bLY: 0, bShow: false,
       ang: 'M0 0', angX: 0, angY: 0,
@@ -189,7 +189,7 @@
     var X0 = 20, X1 = 330, CY = 105, R = 75, sc = 150 / D;
     var Apx = A * sc, Dpx = Math.max(0, Dg * sc), bpx = Math.max(0, B * sc), Cpx = C * sc;
     var spread = R * (Math.PI / 2) * t;
-    var cc = Math.max(32, 175 - Apx / 2);
+    var cc = Math.max(32, (refX || 175) - Apx / 2);
     var kmin = Math.ceil((X0 - spread - Dpx - cc) / Apx), kmax = Math.floor((X1 + spread - cc) / Apx);
     var steps = 16 * Math.min(8, Math.ceil(k)), path = '';
     g.thin = Dpx * k < 0.8;
@@ -209,37 +209,58 @@
 
     var tk = 4 * u;
     var vt = function (x, y) { return ' M' + P(x, y - tk) + ' L' + P(x, y + tk); };
-    var xa = cc, xd = cc + Dpx, xb = cc + Apx;
+    // 축방향 치수는 모두 롤 중심선(y = CY) 위에서 잽니다: 이 높이에서는 홈이 정면을 향해 실제 크기로 보입니다.
+    //   D·E : 중심선 위 (홈 왼쪽 끝 → 홈 오른쪽 끝 → 다음 홈 왼쪽 끝)
+    //   A   : 중심선보다 조금 위에 따로 (홈 왼쪽 끝 → 다음 홈 왼쪽 끝, 롤 축과 나란히)
+    var xa = cc, xd = cc + Dpx, xb = cc + Apx, ay = CY - 18 * u;
     if (Apx * k >= 24 && xb <= 328) {
       g.axialOk = true;
-      if (!g.axialOnBody) {
-        // 기본 배율: 몸통 아래에 치수선
-        g.axial = 'M' + P(xa, CY) + ' V214 M' + P(xd, CY) + ' V202 M' + P(xb, CY) + ' V214' +
-                  ' M' + P(xa, 200) + ' H' + r1(xb) + vt(xa, 200) + vt(xd, 200) + vt(xb, 200) +
-                  ' M' + P(xa, 226) + ' H' + r1(xb) + vt(xa, 226) + vt(xb, 226);
-        g.dX = (xa + xd) / 2; g.dY = 196; g.eX = (xd + xb) / 2; g.eY = 196; g.aX = (xa + xb) / 2; g.aY = 222;
-      } else {
-        // 확대했을 때: 롤 중심선 위에 바로 표시
-        g.axial = 'M' + P(xa, CY) + ' H' + r1(xb) + vt(xa, CY) + vt(xd, CY) + vt(xb, CY);
-        g.dX = (xa + xd) / 2; g.dY = CY - 6 * u; g.eX = (xd + xb) / 2; g.eY = CY - 6 * u;
-        g.aX = (xa + xb) / 2; g.aY = CY + 16 * u;
-      }
-      g.dShow = Dpx * k >= 14;
+      g.axial = 'M' + P(xa, CY) + ' H' + r1(xb) + vt(xa, CY) + vt(xd, CY) + vt(xb, CY) +
+                ' M' + P(xa, CY) + ' V' + r1(ay - 4 * u) + ' M' + P(xb, CY) + ' V' + r1(ay - 4 * u) +
+                ' M' + P(xa, ay) + ' H' + r1(xb) + vt(xa, ay) + vt(xb, ay);
+      g.dX = (xa + xd) / 2; g.dY = CY + ((Apx - Dpx) * k >= 90 ? 13 : 26) * u; g.eX = (xd + xb) / 2; g.eY = CY + 13 * u;
+      g.aX = (xa + xb) / 2; g.aY = ay - 5 * u;
+      g.dShow = true;
     }
-    var gx = sn * tk, gy = -cs * tk;
-    var tick = function (x, y) { return ' M' + P(x - gx, y - gy) + ' L' + P(x + gx, y + gy); };
-    var x2 = cc + Cpx * cs, y2 = CY + Cpx * sn, x1 = cc + bpx * cs, y1 = CY + bpx * sn;
-    if (Cpx * k >= 18 && x2 <= 328 && y2 <= 178) {
+    // 직각 치수 C: 롤 표면을 펼친 좌표(가로 x = 축방향, 세로 s = 둘레 길이)에서 정확히 계산한 뒤 그림으로 옮깁니다.
+    //   펼친 면에서는 홈이 곧은 선 x = 시작점 + s·tanθ 이고, 홈에 수직인 방향은 (cosθ, −sinθ) 입니다.
+    //   홈 왼쪽 끝(중심선, s = 0)에서 이 방향으로 C 만큼 가면 다음 홈 왼쪽 끝에 정확히 닿고,
+    //   처음 날 두께만큼 간 지점은 홈 오른쪽 끝입니다. 그림의 세로 위치는 y = 중심 − R·sin(s/R).
+    var prj = function (x, s) { return [x, CY - R * Math.sin(s / R)]; };
+    var dirAt = function (s) { var dx = t, dy = -Math.cos(s / R), m = Math.hypot(dx, dy) || 1; return [dx / m, dy / m]; };
+    var ptick = function (x, s) {
+      var p = prj(x, s), d = dirAt(s);
+      return ' M' + P(p[0] - d[0] * tk, p[1] - d[1] * tk) + ' L' + P(p[0] + d[0] * tk, p[1] + d[1] * tk);
+    };
+    var sEnd = -Cpx * sn, xEnd = cc + Cpx * cs, sB = -bpx * sn, xB = cc + bpx * cs;
+    var pEnd = prj(xEnd, sEnd), pB = prj(xB, sB);
+    if (Cpx * k >= 12 && xEnd <= 328 && -sEnd < R * 0.95 && pEnd[1] <= 178) {
       g.perpOk = true;
-      g.perp = 'M' + P(cc, CY) + ' L' + P(x2, y2) + tick(cc, CY) + tick(x2, y2) + (bpx * k > 2 ? tick(x1, y1) : '');
-      g.cLX = (x1 + x2) / 2 + sn * 12 * u; g.cLY = (y1 + y2) / 2 - cs * 12 * u + 3 * u;
-      g.bLX = (cc + x1) / 2 - sn * 11 * u; g.bLY = (CY + y1) / 2 + cs * 11 * u + 3 * u;
-      g.bShow = bpx * k >= 8;
+      // 치수선은 실제 측정선에서 홈 방향(아래·왼쪽)으로 비켜서 그리고, 양 끝에서 홈 가장자리를 따라 보조선을 내립니다.
+      var L0 = 20 * u, Lx = L0 + 5 * u;
+      var off = function (x, s, L) { return [x - L * sn, s - L * cs]; };          // 펼친 면에서 홈 방향으로 L 만큼 이동
+      var line = function (a, b, n) { var o = []; for (var i2 = 0; i2 <= n; i2++) { var f2 = i2 / n, p2 = prj(a[0] + (b[0] - a[0]) * f2, a[1] + (b[1] - a[1]) * f2); o.push(P(p2[0], p2[1])); } return 'M' + o.join(' L'); };
+      var A0 = [cc, 0], A1 = [xEnd, sEnd], AB = [xB, sB];
+      var O0 = off(cc, 0, L0), O1 = off(xEnd, sEnd, L0), OB = off(xB, sB, L0);
+      var dtick = function (o) { var p = prj(o[0], o[1]), d = dirAt(o[1]); return ' M' + P(p[0] - d[0] * tk, p[1] - d[1] * tk) + ' L' + P(p[0] + d[0] * tk, p[1] + d[1] * tk); };
+      var q = 6 * u;
+      var sq = ' ' + line([O0[0] + q * cs, O0[1] - q * sn], [O0[0] + q * cs + q * sn, O0[1] - q * sn + q * cs], 1) +
+               ' ' + line([O0[0] + q * cs + q * sn, O0[1] - q * sn + q * cs], [O0[0] + q * sn, O0[1] + q * cs], 1);
+      g.perp = line(O0, O1, 16) + ' ' + line([cc - 1.5 * u * sn, -1.5 * u * cs], off(cc, 0, Lx), 6) + ' ' + line([xEnd - 1.5 * u * sn, sEnd - 1.5 * u * cs], off(xEnd, sEnd, Lx), 6) +
+               dtick(O0) + dtick(O1) + (bpx * k > 2 ? dtick(OB) : '') + sq;
+      // C 글자는 치수선과 나란히(기울여서), 치수선 바깥쪽에
+      var Mc = off((O0[0] + O1[0]) / 2, (O0[1] + O1[1]) / 2, 19 * u), pm = prj(Mc[0], Mc[1]);
+      var q0 = prj(O0[0], O0[1]), q1 = prj(O1[0], O1[1]);
+      g.cLX = pm[0]; g.cLY = pm[1]; g.cRot = Math.atan2(q1[1] - q0[1], q1[0] - q0[0]) * 180 / Math.PI;
+      g.bShow = false;
     }
+    // 각도 θ: 치수와 겹치지 않게 바로 왼쪽 홈(없으면 오른쪽 다음 홈)의 중심선 위치에서 표시
+    var ax0 = (Apx * k >= 70 && cc - Apx >= 26) ? cc - Apx : (cc + 2 * Apx <= 300 ? cc + 2 * Apx : cc - Apx);
     var ar = 22 * u, al = 34 * u;
-    g.ang = 'M' + P(cc, CY) + ' V' + r1(CY - al) + ' M' + P(cc, CY) + ' L' + P(cc + al * sn, CY - al * cs) +
-            ' M' + P(cc, CY - ar) + ' A' + r1(ar) + ' ' + r1(ar) + ' 0 0 1 ' + P(cc + ar * sn, CY - ar * cs);
-    g.angX = cc + 4 * u + (ar + 6 * u) * Math.sin(th / 2); g.angY = CY - (ar + 6 * u) * Math.cos(th / 2);
+    // 각도 표시는 중심선 아래쪽: 세로(원주 방향) 아래쪽 기준선과, 아래로 내려가는 홈 방향 사이
+    g.ang = 'M' + P(ax0, CY) + ' V' + r1(CY + al) + ' M' + P(ax0, CY) + ' L' + P(ax0 - al * sn, CY + al * cs) +
+            ' M' + P(ax0, CY + ar) + ' A' + r1(ar) + ' ' + r1(ar) + ' 0 0 1 ' + P(ax0 - ar * sn, CY + ar * cs);
+    g.angX = ax0 - 4 * u - (ar + 6 * u) * Math.sin(th / 2); g.angY = CY + (ar + 10 * u) * Math.cos(th / 2) + 3 * u;
 
     // 지금 배율에서 읽기 어려운지, 읽기 좋은 배율은 얼마인지
     g.small = !g.axialOk || !g.perpOk || Dpx * k < 5 || (B > 0 && bpx * k < 6);
@@ -258,7 +279,12 @@
   function renderFig() {
     var L = fig.last; if (!L) return;
     var c = L.c, v = L, k = fig.k;
-    var g = grooveGeometry(v.D, v.deg, v.Z, v.B, k);
+    // 홈 모양: L 좌나사, R 우나사(좌나사의 좌우 대칭), S 스파이럴(가운데서 양쪽으로 반대 방향, ∧ 모양), X 격자(좌+우)
+    var pat = v.pat, PATN = { L: '좌나사', R: '우나사', S: '스파이럴', X: '격자' };
+    var g = grooveGeometry(v.D, v.deg, v.Z, v.B, k, pat === 'S' ? 97.5 : 175);
+    var mir = pat === 'R';                       // 치수·각도도 거울처럼 뒤집어 표시
+    var MT = 'matrix(-1 0 0 1 350 0)';
+    var mx = function (x) { return mir ? 350 - x : x; };
     var g2 = function (x) { return g.ok && isFinite(x) ? fmt(x, 2) : '—'; };
     c.out('A', g2(g.A)); c.out('D', g2(g.Dg)); c.out('E', g2(g.E));
     c.out('C', g2(g.C)); c.out('Cr', g2(g.Cr)); c.out('V', g2(g.V));
@@ -277,6 +303,12 @@
     $$('text[data-fs]', svg).forEach(function (t) { t.setAttribute('font-size', r2(Number(t.dataset.fs) / k)); t.setAttribute('stroke-width', r2(3 / k)); });
 
     set('gGroove', { d: g.groove, 'stroke-width': g.thin ? 1.2 : 0 });
+    set('gGroove2', { d: g.groove, 'stroke-width': g.thin ? 1.2 : 0 });
+    set('gTA', { transform: mir ? MT : '' });
+    set('gClipA', { 'clip-path': pat === 'S' ? 'url(#grvHalfL)' : '' });
+    set('gClipB', { 'clip-path': pat === 'S' ? 'url(#grvHalfR)' : '', opacity: g.drawable && (pat === 'S' || pat === 'X') ? 1 : 0 });
+    set('gMid', { opacity: g.drawable && pat === 'S' ? 1 : 0 });
+    ['gAxialA', 'gAxialB', 'gPerpA', 'gPerpB', 'gAngA', 'gAngB'].forEach(function (id) { set(id, { transform: mir ? MT : '' }); });
     set('gEmpty', { opacity: g.drawable ? 0 : 1 });
     set('gAxialG', { opacity: g.axialOk ? 1 : 0 });
     set('gAxialA', { d: g.axial, opacity: g.axialOnBody ? 1 : 0 }); set('gAxialB', { d: g.axial });
@@ -284,27 +316,27 @@
       var onBody = g.axialOnBody;
       set(id, onBody ? { fill: '#FFB48A', stroke: '#15181B' } : { fill: id === 'gA' ? '#C2410C' : '#17191C', stroke: 'none' });
     });
-    set('gD', { x: r2(g.dX), y: r2(g.dY), opacity: g.dShow ? 1 : 0 }); txt('gD', 'D ' + g2(g.Dg));
-    set('gE', { x: r2(g.eX), y: r2(g.eY) }); txt('gE', 'E ' + g2(g.E));
-    set('gA', { x: r2(g.aX), y: r2(g.aY) }); txt('gA', 'A ' + g2(g.A));
+    set('gD', { x: r2(mx(g.dX)), y: r2(g.dY), opacity: g.dShow ? 1 : 0, 'text-anchor': 'middle' }); txt('gD', 'D ' + g2(g.Dg));
+    set('gE', { x: r2(mx(g.eX)), y: r2(g.eY) }); txt('gE', 'E ' + g2(g.E));
+    set('gA', { x: r2(mx(g.aX)), y: r2(g.aY) }); txt('gA', 'A ' + g2(g.A));
     set('gPerp', { opacity: g.perpOk ? 1 : 0 });
     set('gPerpA', { d: g.perp }); set('gPerpB', { d: g.perp });
-    set('gC', { x: r2(g.cLX), y: r2(g.cLY) }); txt('gC', k >= 1.5 ? 'C ' + g2(g.C) : 'C');
-    set('gB', { x: r2(g.bLX), y: r2(g.bLY), opacity: g.bShow ? 1 : 0 }); txt('gB', k >= 1.5 ? '날 ' + fmt(v.B, v.B % 1 ? 1 : 0) : '날');
+    set('gC', { x: r2(mx(g.cLX)), y: r2(g.cLY), 'text-anchor': 'middle', transform: 'rotate(' + r2(mir ? -g.cRot : g.cRot) + ' ' + r2(mx(g.cLX)) + ' ' + r2(g.cLY) + ')' }); txt('gC', 'C ' + g2(g.C) + (v.B > 0 ? ' (날 ' + fmt(v.B, v.B % 1 ? 1 : 0) + ')' : ''));
+    set('gB', { x: r2(mx(g.bLX)), y: r2(g.bLY), opacity: g.bShow ? 1 : 0, 'text-anchor': mir ? 'start' : 'end' }); txt('gB', '날 ' + fmt(v.B, v.B % 1 ? 1 : 0));
     set('gAngG', { opacity: g.drawable ? 1 : 0 });
     set('gAngA', { d: g.ang }); set('gAngB', { d: g.ang });
-    set('gAngT', { x: r2(g.angX), y: r2(g.angY) }); txt('gAngT', degTxt);
+    set('gAngT', { x: r2(mir ? 350 - g.angX + 0 : g.angX), y: r2(g.angY), 'text-anchor': mir ? 'start' : 'end' }); txt('gAngT', degTxt);
 
     c.out('figCaption', g.drawable ? degTxt + ' · ' + v.Z + '줄 · Ø' + v.D : '');
     svg.setAttribute('aria-label', g.drawable
-      ? '외경 ' + v.D + 'mm 롤에 ' + v.Z + '줄 ' + v.deg + '도 홈이 피치 ' + g2(g.A) + 'mm로 새겨진 그림, ' + fmt(k, 1) + '배'
+      ? PATN[pat] + ' 홈, 외경 ' + v.D + 'mm 롤에 ' + v.Z + '줄 ' + v.deg + '도 홈이 피치 ' + g2(g.A) + 'mm로 새겨진 그림, ' + fmt(k, 1) + '배'
       : '홈 형상 그림, 값을 입력하면 표시');
     el('grvWarn').hidden = !g.overlap;
     txt('zLevel', '×' + fmt(k, 1));
     el('zOut').disabled = k <= 1.001; el('zIn').disabled = k >= KMAX - 0.001;
     var fb = el('zFocus');
     fb.hidden = !(g.drawable && g.small && g.focusK > k * 1.2);
-    fig.focus = { k: g.focusK, x: g.focusX, y: g.focusY };
+    fig.focus = { k: g.focusK, x: mx(g.focusX), y: g.focusY };
     svg.style.touchAction = k > 1.001 ? 'none' : 'pan-x pan-y';
   }
 
