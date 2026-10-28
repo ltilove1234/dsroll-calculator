@@ -1,0 +1,42 @@
+name: APK 만들기
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: APK 빌드
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon assembleRelease
+          mkdir -p out
+          cp app/build/outputs/apk/release/app-release.apk out/dsroll-calculator.apk
+
+      - name: APK 파일 올리기 (Actions 결과물)
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsroll-calculator-apk
+          path: out/dsroll-calculator.apk
+
+      - name: 릴리스에 APK 올리기 (바로 내려받기용)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: 동서산업롤 계산기 (빌드 ${{ github.run_number }})
+          files: out/dsroll-calculator.apk
