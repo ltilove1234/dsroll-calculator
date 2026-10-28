@@ -115,7 +115,17 @@ h1,h2,h3,p{margin:0}
 
 .card.fig{padding:12px 12px 10px;gap:6px}
 .card.fig .row-between,.card.fig .legend,.card.fig .note{padding:0 4px}
-#grvSvg{display:block;width:100%;height:auto}
+#grvSvg,#zoomSvg{display:block;width:100%;height:auto}
+.warn{margin:0 4px;padding:8px 10px;border-radius:8px;background:#FBE9DF;color:#8A3A12;font-size:12px;font-weight:700;line-height:1.5}
+.figwrap{position:relative;border-radius:10px;overflow:hidden;background:#fff}
+#grvSvg{touch-action:pan-x pan-y;user-select:none;-webkit-user-select:none}
+.zoomctl{position:static;align-self:flex-end;margin:6px 2px 0 auto;width:max-content;display:flex;align-items:center;gap:2px;background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:22px;padding:2px;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.zoomctl button{width:40px;height:40px;border:none;border-radius:20px;background:transparent;font-size:22px;font-weight:700;line-height:1;color:var(--ink)}
+.zoomctl button:active{background:#E4E1DA}
+.zoomctl button:disabled{color:#B5B0A6}
+.zoomctl button.fit{width:auto;padding:0 12px;font-size:13px}
+.zoomctl span{min-width:40px;text-align:center;font-size:12px;font-weight:700;color:var(--sub)}
+.focusbtn{margin:0 4px;height:44px;border:1px solid var(--accent);border-radius:12px;background:var(--accent-soft);color:#8A3A12;font-size:14px;font-weight:700}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px}
 .legend span{display:flex;align-items:center;gap:6px}
 .legend i{display:inline-block;width:14px;height:3px}
