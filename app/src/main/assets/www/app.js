@@ -125,7 +125,7 @@
   };
 
   /* ---------------- ② 고무롤 견적 ---------------- */
-  var rollBlank = { lossT: '', lossL: '', aOD: '', aL: '', aP: '', iOD: '', iC: '', iL: '', iG: '1.5', iP: '', oOD: '', oC: '', oL: '', oG: '1.5', oP: '' };
+  var rollBlank = { lossT: '10', lossL: '', aOD: '', aL: '', aP: '', iOD: '', iC: '', iL: '', iG: '1.5', iP: '', oOD: '', oC: '', oL: '', oG: '1.5', oP: '' };
   var rollDef = {
     inputs: Object.keys(rollBlank).filter(function (k) { return k !== 'iG' && k !== 'oG'; }).concat([]),
     blank: function () { return Object.assign({}, rollBlank); },
