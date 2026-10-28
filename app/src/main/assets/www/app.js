@@ -125,7 +125,7 @@
   };
 
   /* ---------------- ② 고무롤 견적 ---------------- */
-  var rollBlank = { lossT: '10', lossL: '', aOD: '', aL: '', aP: '', iOD: '', iC: '', iL: '', iG: '1.5', iP: '', oOD: '', oC: '', oL: '', oG: '1.5', oP: '' };
+  var rollBlank = { lossT: '10', lossL: '', aOD: '', aL: '', aP: '', a2OD: '', a2L: '', a2P: '', iOD: '', iC: '', iL: '', iG: '1.5', iP: '', oOD: '', oC: '', oL: '', oG: '1.5', oP: '' };
   var rollDef = {
     inputs: Object.keys(rollBlank).filter(function (k) { return k !== 'iG' && k !== 'oG'; }).concat([]),
     blank: function () { return Object.assign({}, rollBlank); },
@@ -133,16 +133,18 @@
       var down = function (x) { return Math.floor(x / 1000) * 1000; };
       var M = n(s.lossT), N = n(s.lossL);
       var area = (n(s.aOD) * 3.14 * n(s.aL)) / 100;
+      var area2 = (n(s.a2OD) * 3.14 * n(s.a2L)) / 100;   // 표면적 2 (같은 식)
       var kg = function (od, core, len, g) { return ((Math.pow(n(od) + M, 2) - Math.pow(n(core), 2)) * 0.785 * n(g) * (n(len) + N)) / 1000000; };
       var iKg = n(s.iOD) && n(s.iL) ? kg(s.iOD, s.iC, s.iL, s.iG) : 0;
       var oKg = n(s.oOD) && n(s.oL) ? kg(s.oOD, s.oC, s.oL, s.oG) : 0;
-      var aAmt = down(area * n(s.aP)), iAmt = down(iKg * n(s.iP)), oAmt = down(oKg * n(s.oP));
+      var aAmt = down(area * n(s.aP)), a2Amt = down(area2 * n(s.a2P)), iAmt = down(iKg * n(s.iP)), oAmt = down(oKg * n(s.oP));
       var q = function (x, d, u) { return x > 0 ? fmt(x, d) + ' ' + u : '—'; };
       c.out('aQty', q(area, 1, 'cm²')); c.out('aAmt', fmt(aAmt, 0));
+      c.out('a2Qty', q(area2, 1, 'cm²')); c.out('a2Amt', fmt(a2Amt, 0));
       c.out('iQty', q(iKg, 3, 'kg'));   c.out('iAmt', fmt(iAmt, 0));
       c.out('oQty', q(oKg, 3, 'kg'));   c.out('oAmt', fmt(oAmt, 0));
       c.out('totalKg', fmt(iKg + oKg, 3));
-      c.out('total', fmt(aAmt + iAmt + oAmt, 0));
+      c.out('total', fmt(aAmt + a2Amt + iAmt + oAmt, 0));
     }
   };
   // 비중을 바꾼 칸도 '사용 중'으로 표시
@@ -321,7 +323,7 @@
     set('gA', { x: r2(mx(g.aX)), y: r2(g.aY) }); txt('gA', 'A ' + g2(g.A));
     set('gPerp', { opacity: g.perpOk ? 1 : 0 });
     set('gPerpA', { d: g.perp }); set('gPerpB', { d: g.perp });
-    set('gC', { x: r2(mx(g.cLX)), y: r2(g.cLY), 'text-anchor': 'middle', transform: 'rotate(' + r2(mir ? -g.cRot : g.cRot) + ' ' + r2(mx(g.cLX)) + ' ' + r2(g.cLY) + ')' }); txt('gC', 'C ' + g2(g.C) + (v.B > 0 ? ' (날 ' + fmt(v.B, v.B % 1 ? 1 : 0) + ')' : ''));
+    set('gC', { x: r2(mx(g.cLX)), y: r2(g.cLY), 'text-anchor': 'middle', transform: 'rotate(' + r2(mir ? -(g.cRot || 0) : (g.cRot || 0)) + ' ' + r2(mx(g.cLX)) + ' ' + r2(g.cLY) + ')' }); txt('gC', 'C ' + g2(g.C) + (v.B > 0 ? ' (날 ' + fmt(v.B, v.B % 1 ? 1 : 0) + ')' : ''));
     set('gB', { x: r2(mx(g.bLX)), y: r2(g.bLY), opacity: g.bShow ? 1 : 0, 'text-anchor': mir ? 'start' : 'end' }); txt('gB', '날 ' + fmt(v.B, v.B % 1 ? 1 : 0));
     set('gAngG', { opacity: g.drawable ? 1 : 0 });
     set('gAngA', { d: g.ang }); set('gAngB', { d: g.ang });
