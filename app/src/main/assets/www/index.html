@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>동서산업롤 계산기</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ 시작 화면 ============ -->
+<section id="scr-splash" class="screen active" aria-label="시작 화면">
+  <div class="hero">
+    <svg class="hero-bg" aria-hidden="true" viewBox="0 0 200 120" fill="none" stroke="#EEEAE3" stroke-width="0.6">
+      <path d="M-10 60 L100 -6 L210 60 L100 126 Z"></path>
+      <path d="M-30 60 L100 -18 L230 60 L100 138 Z"></path>
+    </svg>
+    <img class="logo" src="logo.png" alt="동서산업롤 마크">
+    <div class="brand">
+      <div class="brand-ko">(주)동서산업롤</div>
+      <div class="brand-en">DONGSEO INDUSTRIAL ROLL</div>
+    </div>
+    <div class="hero-band" aria-hidden="true"><i></i><b></b></div>
+  </div>
+  <div class="splash-body">
+    <h1 class="tagline">현장에서 바로 쓰는 고무롤 계산 도구</h1>
+    <div class="tags">
+      <span>실중량</span><span>고무롤 견적</span><span>홈 가공</span><span>RPM · 내경</span>
+    </div>
+    <div class="grow"></div>
+    <button type="button" class="btn-primary" data-go="calc">시작하기
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>
+    </button>
+    <button type="button" class="btn-secondary" data-go="materials">
+      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16"></path><path d="M4 12h16"></path><path d="M4 18h10"></path></svg>
+      재질 · 비중 관리
+    </button>
+  </div>
+</section>
+
+<!-- ============ 계산기 (옆으로 넘기기) ============ -->
+<section id="scr-calc" class="screen" aria-label="계산기">
+  <nav class="dots" aria-label="계산기 넘기기">
+    <button type="button" data-page="0" aria-label="1. 실중량"><span></span></button>
+    <button type="button" data-page="1" aria-label="2. 고무롤 견적"><span></span></button>
+    <button type="button" data-page="2" aria-label="3. 홈 가공"><span></span></button>
+    <button type="button" data-page="3" aria-label="4. 간편 계산"><span></span></button>
+  </nav>
+  <div class="pager" id="pager">
+
+    <!-- ① 실중량 -->
+    <div class="panel" id="p-weight">
+      <header class="bar"><button type="button" class="back" data-back aria-label="뒤로"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"></path></svg></button><h2>실중량 · 금액</h2></header>
+      <div class="slotbar"><div class="slots" role="tablist" aria-label="계산 칸"></div><button type="button" class="clear">지우기</button></div>
+      <div class="body">
+        <div class="seg" role="tablist">
+          <button type="button" data-set="shape=pipe">파이프</button>
+          <button type="button" data-set="shape=bar">환봉</button>
+        </div>
+        <div class="stack8">
+          <div class="row-between"><span class="lbl">재질</span><button type="button" class="link" data-go="materials">재질 관리 ›</button></div>
+          <div class="chips" data-chips></div>
+        </div>
+        <div class="grid2">
+          <label class="fl">외경<span class="inwrap"><input data-k="od" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+          <label class="fl" data-show="pipe">두께<span class="inwrap"><input data-k="t" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+          <label class="fl">길이 (면장)<span class="inwrap"><input data-k="len" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+          <label class="fl">비중<span class="inwrap"><input data-k="sg" inputmode="decimal" autocomplete="off"></span></label>
+          <label class="fl span2">kg당 단가<span class="inwrap"><input data-k="price" inputmode="numeric" autocomplete="off"><em>원</em></span></label>
+        </div>
+        <div class="formula" data-o="formula"></div>
+      </div>
+      <div class="result">
+        <div class="res-row"><span><b data-o="slot"></b> 중량</span><span class="big"><b data-o="weight">—</b><small>kg</small></span></div>
+        <div class="res-row"><span>금액</span><span class="mid accent"><b data-o="amount">—</b><small>원</small></span></div>
+      </div>
+    </div>
+
+    <!-- ② 고무롤 견적 -->
+    <div class="panel" id="p-roll">
+      <header class="bar"><button type="button" class="back" data-back aria-label="뒤로"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"></path></svg></button><h2>고무롤 견적</h2></header>
+      <div class="slotbar"><div class="slots" role="tablist" aria-label="계산 칸"></div><button type="button" class="clear">지우기</button></div>
+      <div class="body tight">
+        <div class="loss">
+          <div class="loss-t">LOSS (가공 여유)</div>
+          <div class="grid2 g10">
+            <label class="fl sm">두께 LOSS<span class="inwrap"><input data-k="lossT" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+            <label class="fl sm">길이 LOSS<span class="inwrap"><input data-k="lossL" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+          </div>
+        </div>
+        <section class="card">
+          <div class="row-between"><h3>표면적</h3><span class="hint">외경 × 3.14 × 면장</span></div>
+          <div class="grid3">
+            <label class="fl sm">외경<span class="inwrap"><input data-k="aOD" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+            <label class="fl sm">면장<span class="inwrap"><input data-k="aL" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+            <label class="fl sm">단가<span class="inwrap"><input data-k="aP" inputmode="numeric" autocomplete="off"><em>원</em></span></label>
+          </div>
+          <div class="line"><span data-o="aQty">—</span><b><span data-o="aAmt">0</span> 원</b></div>
+        </section>
+        <section class="card">
+          <div class="row-between"><h3>속감</h3><span class="hint">철심 위 1차 고무</span></div>
+          <div class="grid3">
+            <label class="fl sm">외경<span class="inwrap"><input data-k="iOD" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+            <label class="fl sm">철심경<span class="inwrap"><input data-k="iC" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+            <label class="fl sm">면장<span class="inwrap"><input data-k="iL" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+            <label class="fl sm">비중<span class="inwrap"><input data-k="iG" inputmode="decimal" autocomplete="off"></span></label>
+            <label class="fl sm">kg 단가<span class="inwrap"><input data-k="iP" inputmode="numeric" autocomplete="off"><em>원</em></span></label>
+          </div>
+          <div class="line"><span data-o="iQty">—</span><b><span data-o="iAmt">0</span> 원</b></div>
+        </section>
+        <section class="card">
+          <div class="row-between"><h3>겉감</h3><span class="hint">최종 외피 고무</span></div>
+          <div class="grid3">
+            <label class="fl sm">외경<span class="inwrap"><input data-k="oOD" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+            <label class="fl sm">철심경<span class="inwrap"><input data-k="oC" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+            <label class="fl sm">면장<span class="inwrap"><input data-k="oL" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+            <label class="fl sm">비중<span class="inwrap"><input data-k="oG" inputmode="decimal" autocomplete="off"></span></label>
+            <label class="fl sm">kg 단가<span class="inwrap"><input data-k="oP" inputmode="numeric" autocomplete="off"><em>원</em></span></label>
+          </div>
+          <div class="line"><span data-o="oQty">—</span><b><span data-o="oAmt">0</span> 원</b></div>
+        </section>
+        <p class="note">금액은 항목별 1,000원 단위 버림. 속감·겉감 중량 = ((외경+두께LOSS)² − 철심경²) × 0.785 × 비중 × (면장+길이LOSS) ÷ 1,000,000</p>
+      </div>
+      <div class="result row">
+        <div class="col"><span><b data-o="slot"></b> 견적 합계</span><span class="small">고무 <b data-o="totalKg">0.000</b> kg</span></div>
+        <span class="big accent"><b data-o="total">0</b><small>원</small></span>
+      </div>
+    </div>
+
+    <!-- ③ 홈(그루브) 가공 -->
+    <div class="panel" id="p-groove">
+      <header class="bar"><button type="button" class="back" data-back aria-label="뒤로"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"></path></svg></button><h2>홈(그루브) 가공</h2></header>
+      <div class="slotbar"><div class="slots" role="tablist" aria-label="계산 칸"></div><button type="button" class="clear">지우기</button></div>
+      <div class="body">
+        <div class="grid2">
+          <label class="fl">외경<span class="inwrap"><input data-k="od" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+          <label class="fl">각도 θ<span class="inwrap"><input data-k="ang" inputmode="decimal" autocomplete="off"><em>°</em></span></label>
+          <label class="fl">줄수<span class="inwrap"><input data-k="lines" inputmode="numeric" autocomplete="off"><em>줄</em></span></label>
+          <label class="fl">그라인더 날 두께<span class="inwrap"><input data-k="blade" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+        </div>
+
+        <section class="card fig">
+          <div class="row-between"><h3 class="red">롤 그림 (실제 비율)</h3><span class="mono hint" data-o="figCaption"></span></div>
+          <svg id="grvSvg" role="img" aria-label="홈 형상 그림" viewBox="0 0 350 240">
+            <defs>
+              <linearGradient id="grvShade" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#3B4046"></stop>
+                <stop offset="0.38" stop-color="#8E949B"></stop>
+                <stop offset="0.5" stop-color="#9DA3AA"></stop>
+                <stop offset="1" stop-color="#2C3035"></stop>
+              </linearGradient>
+              <clipPath id="grvClip"><rect x="20" y="30" width="310" height="150" rx="6"></rect></clipPath>
+            </defs>
+            <rect x="3" y="77" width="17" height="56" rx="2" fill="#7C8188"></rect>
+            <rect x="330" y="77" width="17" height="56" rx="2" fill="#7C8188"></rect>
+            <rect x="20" y="30" width="310" height="150" rx="6" fill="url(#grvShade)"></rect>
+            <g clip-path="url(#grvClip)"><path id="gGroove" d="M0 0" fill="#15181B" fill-opacity="0.88" stroke="#15181B" stroke-width="0"></path></g>
+            <rect x="20" y="30" width="310" height="150" rx="6" fill="none" stroke="#17191C" stroke-width="1.2"></rect>
+            <text id="gEmpty" x="175" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">외경 · 각도 · 줄수를 입력하면 그려집니다</text>
+            <g id="gDims" opacity="0">
+              <path id="gGuide" d="M0 0" fill="none" stroke="#FF8A4C" stroke-width="1" stroke-dasharray="3 3"></path>
+              <path id="gDim" d="M0 0" fill="none" stroke="#17191C" stroke-width="1.2"></path>
+              <text id="gD" y="196" text-anchor="middle" font-size="10" font-weight="700" fill="#17191C" class="svgmono">D</text>
+              <text id="gE" y="196" text-anchor="middle" font-size="10" font-weight="700" fill="#17191C" class="svgmono">E</text>
+              <text id="gA" y="222" text-anchor="middle" font-size="10" font-weight="700" fill="#C2410C" class="svgmono">A</text>
+            </g>
+            <g id="gPerp" opacity="0">
+              <path id="gPerpA" d="M0 0" fill="none" stroke="#15181B" stroke-width="3.6" stroke-linecap="round"></path>
+              <path id="gPerpB" d="M0 0" fill="none" stroke="#FFD166" stroke-width="1.6" stroke-linecap="round"></path>
+              <text id="gC" text-anchor="middle" font-size="10" font-weight="700" fill="#FFD166" stroke="#15181B" stroke-width="3" paint-order="stroke" class="svgmono">C</text>
+              <text id="gB" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF" stroke="#15181B" stroke-width="3" paint-order="stroke">날</text>
+            </g>
+          </svg>
+          <div class="legend mono">
+            <span><i style="background:#C2410C"></i>축방향 A · D · E</span>
+            <span><i style="background:#E0A800"></i>직각 C <b data-o="cVal">—</b> · 남는 살 <b data-o="crVal">—</b></span>
+          </div>
+          <p class="note">앞쪽 반 둘레를 본 모습. 홈 간격·홈 폭·기울기는 외경 대비 실제 비율로 그립니다 (면장 길이는 일부만 표시).</p>
+        </section>
+
+        <section class="card list">
+          <h3 class="red">축방향 (가로)</h3>
+          <div class="vrow"><div><b>피치 A</b><small class="mono">tanθ × (외경×3.14÷2) × 2 ÷ 줄수</small></div><span class="mono val"><b data-o="A">—</b><small>mm</small></span></div>
+          <div class="vrow"><div><b>홈 피치 D</b><small class="mono">날 두께 ÷ cosθ</small></div><span class="mono val"><b data-o="D">—</b><small>mm</small></span></div>
+          <div class="vrow last"><div><b>남는 살 E</b><small class="mono">A − D</small></div><span class="mono val"><b data-o="E">—</b><small>mm</small></span></div>
+        </section>
+        <section class="card list">
+          <h3 class="red">홈 직각 방향</h3>
+          <div class="vrow"><div><b>직각 피치 C</b><small class="mono">sin(90°−θ) × A</small></div><span class="mono val"><b data-o="C">—</b><small>mm</small></span></div>
+          <div class="vrow last"><div><b>직각 남는 살</b><small class="mono">C − 날 두께</small></div><span class="mono val"><b data-o="Cr">—</b><small>mm</small></span></div>
+        </section>
+        <section class="card list">
+          <h3 class="red">원주 방향 (세로)</h3>
+          <div class="vrow last"><div><b>세로 피치</b><small class="mono">외경 × 3.14 ÷ 줄수</small></div><span class="mono val"><b data-o="V">—</b><small>mm</small></span></div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ④ 간편 계산 -->
+    <div class="panel" id="p-quick">
+      <header class="bar"><button type="button" class="back" data-back aria-label="뒤로"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"></path></svg></button><h2>간편 계산</h2></header>
+      <div class="slotbar"><div class="slots" role="tablist" aria-label="계산 칸"></div><button type="button" class="clear">지우기</button></div>
+      <div class="body">
+        <section class="card pad16">
+          <h3>RPM ↔ 생산속도</h3>
+          <div class="seg sm">
+            <button type="button" data-set="rMode=a">속도 → RPM</button>
+            <button type="button" data-set="rMode=b">RPM → 속도</button>
+          </div>
+          <div class="grid2 g10">
+            <label class="fl">외경<span class="inwrap"><input data-k="rOD" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+            <label class="fl"><span data-o="rInLabel">생산속도</span><span class="inwrap"><input data-k="rIn" inputmode="decimal" autocomplete="off"><em data-o="rInUnit">m/분</em></span></label>
+          </div>
+          <div class="outbox"><span data-o="rOutLabel">RPM</span><span class="mono"><b data-o="rOut">—</b><small data-o="rOutUnit">rpm</small></span></div>
+        </section>
+        <section class="card pad16">
+          <h3>파이프 내경 · 두께</h3>
+          <div class="seg sm">
+            <button type="button" data-set="pMode=a">두께 → 내경</button>
+            <button type="button" data-set="pMode=b">내경 → 두께</button>
+          </div>
+          <div class="grid2 g10">
+            <label class="fl">외경<span class="inwrap"><input data-k="pOD" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+            <label class="fl"><span data-o="pInLabel">두께</span><span class="inwrap"><input data-k="pIn" inputmode="decimal" autocomplete="off"><em>mm</em></span></label>
+          </div>
+          <div class="outbox"><span data-o="pOutLabel">내경</span><span class="mono"><b data-o="pOut">—</b><small>mm</small></span></div>
+        </section>
+        <p class="note mono">RPM = 속도(m/분) × 1000 ÷ (외경 × 3.14)<br>속도 = 외경 × 3.14 × RPM ÷ 1000</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ 재질 · 비중 관리 ============ -->
+<section id="scr-materials" class="screen" aria-label="재질 비중 관리">
+  <header class="bar"><button type="button" class="back" data-back aria-label="뒤로"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"></path></svg></button><h2 class="grow">재질 · 비중 관리</h2><button type="button" class="ghost" id="matDefault">기본값</button></header>
+  <div class="body tight">
+    <p class="note">여기서 저장한 재질과 비중이 실중량 계산의 재질 버튼에 그대로 나타납니다.</p>
+    <div class="mat-head"><span>재질명</span><span>비중</span><span></span></div>
+    <div id="matList" class="stack8"></div>
+    <button type="button" class="dashed" id="matAdd">
+      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+      재질 추가
+    </button>
+  </div>
+  <div class="savebar">
+    <div role="status" id="matStatus"></div>
+    <button type="button" class="btn-primary" id="matSave">저장</button>
+  </div>
+</section>
+
+<script src="app.js"></script>
+</body>
+</html>
