@@ -3,31 +3,36 @@
 회사 엑셀 `계산기.xlsx`의 수식을 그대로 옮긴 안드로이드 앱입니다. 인터넷 없이 동작합니다.
 
 - 시작 화면: 회사 마크, 시작하기, 재질·비중 관리
-- 계산기 (옆으로 넘기기): 실중량 · 고무롤 견적 · 홈(그루브) 가공 · 간편 계산(RPM·내경)
+- 계산기 (옆으로 넘기기): 실중량 · 고무롤 견적 · 홈(그루브) 가공 · 간편 계산(RPM·내경) · 합산
 - 각 계산기마다 1~5번 칸에 따로 계산 가능
+- 고무롤 견적: 두께 LOSS 기본값 10
+- 홈 가공: 좌나사·우나사·스파이럴·격자 그림, 각도 θ와 A·D·E·C 치수 표시, 확대·이동
 - 재질·비중은 관리 화면에서 저장 (휴대폰에 보관)
+- 합산: 실중량(파이프·환봉)·고무롤 견적에서 '합산으로 보내기' → 항목별 무게·금액, 수량, 최종 무게, 초기화
 
-## APK 만드는 법 ① — GitHub (설치 없이, 추천)
+## 내려받기
 
-1. github.com 에 로그인 → 오른쪽 위 **+** → **New repository** → 이름 `dsroll-calculator` → **Create repository**
-2. 새 저장소 화면에서 **uploading an existing file** 클릭
-3. 이 압축을 푼 폴더 **안의 내용 전부**를 끌어다 놓기 (`.github` 폴더 포함) → **Commit changes**
-   - `.github` 폴더가 안 보이면 윈도우 탐색기 › 보기 › 숨긴 항목 체크
-4. 저장소 위쪽 **Actions** 탭에서 "APK 만들기"가 초록 체크가 될 때까지 3~5분 기다리기
-5. 저장소 오른쪽 **Releases** → `dsroll-calculator.apk` 내려받기
+항상 최신 버전:
+https://github.com/ltilove1234/dsroll-calculator/releases/latest/download/dsroll-calculator.apk
 
-## APK 만드는 법 ② — Android Studio
+## GitHub에 올리는 법
 
-1. Android Studio 설치 후 **Open** → 이 폴더 선택 (처음엔 준비에 몇 분 걸림)
-2. 메뉴 **Build › Build App Bundle(s) / APK(s) › Build APK(s)**
-3. 완료 알림의 **locate** → `app-debug.apk`
+1. 저장소 첫 화면에서 **Add file → Upload files**
+2. 이 폴더 **안의 내용 전부**(`.github`, `app`, `gradle`, `build.gradle`, `gradle.properties`, `gradlew`, `gradlew.bat`, `settings.gradle`, `README.md`)를 끌어다 놓기
+   - 윈도우 탐색기 › 보기 › **숨긴 항목** 체크해야 `.github` 폴더가 보입니다
+   - 한 번에 100개가 넘으면 `app` 폴더 따로, 나머지 따로 두 번에 나눠 올리세요
+3. **Commit changes**
+4. **Actions** 탭에서 초록 체크가 뜨면 위 주소로 내려받기
 
 ## 휴대폰에 설치
 
-APK 파일을 휴대폰으로 옮겨(카톡·메일·USB) 누르면 설치됩니다.
-"출처를 알 수 없는 앱" 허용을 물으면 허용해 주세요.
+APK를 휴대폰에서 열어 설치합니다. "출처를 알 수 없는 앱" 허용을 물으면 허용해 주세요.
+
+**버전 1.1부터 고정 서명 키를 씁니다.** 1.0(예전 빌드)이 깔려 있다면 이번 한 번만 기존 앱을 **삭제한 뒤** 설치하세요.
+그다음부터는 새 APK를 그냥 설치하면 **업데이트**로 깔립니다.
+(앱을 삭제하면 저장한 재질·비중 목록도 지워지니, 삭제 전에 목록을 적어 두세요.)
 
 ## 화면 고치기
 
 화면과 계산은 `app/src/main/assets/www/` 안의 `index.html`, `style.css`, `app.js` 에 있습니다.
-수정 후 GitHub에 다시 올리면 새 APK가 자동으로 만들어집니다.
+새 APK를 낼 때는 `app/build.gradle`의 `versionCode` 숫자를 1 올려 주세요.
