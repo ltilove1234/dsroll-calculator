@@ -206,3 +206,14 @@ h1,h2,h3,p{margin:0}
 .grid3 .span3,.grid2 .span3{grid-column:1/-1}
 .grid2.g8{gap:8px}
 .grid3 .span2c{grid-column:span 2}
+
+/* ---------- 작은 숫자 키패드 ---------- */
+:root{--kp:0px}
+.screen{bottom:var(--kp)}
+.kp{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:6px 6px calc(6px + env(safe-area-inset-bottom));background:#D6D3CC;box-shadow:0 -2px 8px rgba(0,0,0,.12)}
+.kp[hidden]{display:none}
+.kp button{height:40px;border:none;border-radius:8px;background:#fff;color:var(--ink);font-family:var(--mono);font-size:20px;font-weight:700;box-shadow:0 1px 0 rgba(0,0,0,.15)}
+.kp button:active{background:#E4E1DA}
+.kp button.fn{background:#ECE9E2;font-family:inherit;font-size:15px}
+.kp button.ok{background:var(--accent);color:#fff;font-family:inherit;font-size:15px}
+input.kp-on{border-color:var(--accent)!important;box-shadow:0 0 0 3px var(--accent-soft)!important}

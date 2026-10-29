@@ -626,6 +626,61 @@
     reloadWeightMats();
   });
 
+  /* ---------------- 작은 숫자 키패드 ----------------
+     숫자 칸을 누르면 휴대폰 기본 키보드 대신 화면 아래 작은 키패드(기본 키보드의 절반 높이)를 띄웁니다. */
+  var kp = $('#kp'), kpInput = null;
+  var isNum = function (el) { return el && el.tagName === 'INPUT' && (el.dataset.num === '1' || /^(decimal|numeric)$/i.test(el.getAttribute('inputmode') || '')); };
+  var markNum = function (el) { if (isNum(el)) { el.dataset.num = '1'; el.setAttribute('inputmode', 'none'); } };
+  $$('input').forEach(markNum);
+  // 나중에 만들어지는 칸(재질 관리·합산 수량)도 누르기 직전에 키패드용으로 바꿉니다
+  document.addEventListener('pointerdown', function (e) { markNum(e.target); }, true);
+  function kpSetH() {
+    document.documentElement.style.setProperty('--kp', kp.hidden ? '0px' : kp.offsetHeight + 'px');
+  }
+  function kpOpen(el) {
+    if (kpInput && kpInput !== el) { kpInput.classList.remove('kp-on'); kpInput.dispatchEvent(new Event('change', { bubbles: true })); }
+    if (kpInput !== el) el.dataset.fresh = el.value !== '' ? '1' : '';   // 값이 있는 칸은 첫 숫자를 누르면 새로 입력
+    kpInput = el; el.classList.add('kp-on');
+    if (kp.hidden) { kp.hidden = false; kpSetH(); }
+    setTimeout(function () { try { el.scrollIntoView({ block: 'nearest' }); } catch (er) {} }, 30);
+  }
+  function kpClose() {
+    if (kpInput) { kpInput.classList.remove('kp-on'); var x = kpInput; kpInput = null; x.dispatchEvent(new Event('change', { bubbles: true })); x.blur(); }
+    kp.hidden = true; kpSetH();
+  }
+  document.addEventListener('focusin', function (e) {
+    if (isNum(e.target)) { markNum(e.target); kpOpen(e.target); }
+    else if (e.target.tagName === 'INPUT') { kp.hidden = true; kpSetH(); }
+  });
+  // 키패드나 숫자 칸 밖을 누르면 닫기
+  document.addEventListener('pointerdown', function (e) {
+    if (kp.hidden || kp.contains(e.target) || isNum(e.target)) return;
+    kpClose();
+  });
+  // 키패드 버튼을 눌러도 입력 칸의 선택이 풀리지 않게
+  kp.addEventListener('pointerdown', function (e) { e.preventDefault(); });
+  kp.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-kp]'); if (!b || !kpInput) return;
+    var k = b.dataset.kp, el = kpInput, v = el.value;
+    if (k === 'done') { kpClose(); return; }
+    if (k === 'next') {
+      var root = el.closest('.panel, .screen') || document;
+      var list = $$('input', root).filter(function (x) { return isNum(x) && x.offsetParent !== null; });
+      var nx = list[list.indexOf(el) + 1];
+      if (nx) nx.focus(); else kpClose();
+      return;
+    }
+    var fresh = el.dataset.fresh === '1'; el.dataset.fresh = '';
+    if (fresh && /^(\d+|00|\.)$/.test(k)) v = '';
+    if (k === 'back') v = v.slice(0, -1);
+    else if (k === 'clear') v = '';
+    else if (k === '.') { if (el.getAttribute('data-noDot') || v.indexOf('.') >= 0) return; v = (v === '' ? '0' : v) + '.'; }
+    else v = (v === '0' && k !== '.') ? k.replace(/^0+(?=\d)/, '') : v + k;
+    el.value = v;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  window.addEventListener('hashchange', function () { if (!kp.hidden) kpClose(); });
+
   /* ---------------- 화면 이동 (안드로이드 뒤로가기 지원) ---------------- */
   var screens = { '': $('#scr-splash'), calc: $('#scr-calc'), materials: $('#scr-materials') };
   function route() {
