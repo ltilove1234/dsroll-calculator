@@ -166,3 +166,36 @@ h1,h2,h3,p{margin:0}
 #matStatus{text-align:center;font-size:13px;font-weight:500;color:var(--sub);min-height:20px}
 #matStatus.warn{color:#8A3A12}
 #matSave{height:56px;font-size:17px;box-shadow:none;background:var(--accent)}
+
+/* ---------- 합산 ---------- */
+.sendbtn{display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border:none;border-radius:12px;background:var(--peach);color:#1E2124;font-size:15px;font-weight:800;width:100%;margin-top:2px}
+.sendbtn:active{filter:brightness(.92)}
+.sendbtn:disabled{background:#3A3F45;color:#7C8188}
+.result.row{flex-wrap:wrap;row-gap:12px}
+.result.row .sendbtn.wide{flex:1 0 100%}
+.dots button{position:relative}
+.dotbadge{position:absolute;top:8px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--brand);color:#fff;font-style:normal;font-size:10px;font-weight:800;line-height:16px;text-align:center}
+.sumbar{justify-content:space-between;padding-left:20px}
+.sumcount{font-size:14px;font-weight:700;color:var(--sub)}
+.sumempty{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:40px 16px;color:var(--sub);background:#fff;border:1px dashed var(--field);border-radius:14px}
+.sumempty b{font-size:16px;color:var(--ink)}
+.sumempty span{font-size:13px;line-height:1.6}
+.sumempty em{font-style:normal;font-weight:700;color:var(--accent)}
+.sumitem{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 12px 12px 14px;display:flex;flex-direction:column;gap:8px}
+.sumtop{display:flex;align-items:flex-start;gap:8px}
+.sumtag{flex-shrink:0;font-size:12px;font-weight:800;padding:4px 8px;border-radius:8px;color:#fff}
+.sumtag.t-pipe{background:#3A5A8C}.sumtag.t-bar{background:#5B6B3A}.sumtag.t-rubber{background:var(--brand)}
+.sumtitle{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.sumtitle b{font-size:15px}
+.sumtitle small{font-size:12px;color:var(--muted);font-family:var(--mono);line-height:1.5;word-break:keep-all}
+.sumdel{width:40px;height:40px;margin:-6px -4px 0 0;border:none;border-radius:10px;background:transparent;color:#8A3A12;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sumbottom{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px dashed var(--line);padding-top:8px}
+.qty{display:flex;align-items:center;border:1px solid var(--field);border-radius:10px;overflow:hidden}
+.qty button{width:40px;height:40px;border:none;background:#F2F1ED;font-size:20px;font-weight:700}
+.qty input{width:48px;height:40px;border:none;text-align:center;font-family:var(--mono);font-size:16px;font-weight:700;outline:none}
+.qty span{padding:0 8px 0 0;font-size:12px;color:var(--muted)}
+.sumval{text-align:right;font-family:var(--mono)}
+.sumval b{display:block;font-size:18px}
+.sumval small{font-size:12px;color:var(--muted)}
+.toast{position:absolute;left:50%;bottom:250px;transform:translate(-50%,10px);background:#1E2124;color:#fff;font-size:14px;font-weight:700;padding:10px 16px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap;z-index:9}
+.toast.show{opacity:1;transform:translate(-50%,0)}

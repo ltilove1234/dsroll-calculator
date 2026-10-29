@@ -45,6 +45,7 @@
     <button type="button" data-page="1" aria-label="2. 고무롤 견적"><span></span></button>
     <button type="button" data-page="2" aria-label="3. 홈 가공"><span></span></button>
     <button type="button" data-page="3" aria-label="4. 간편 계산"><span></span></button>
+    <button type="button" data-page="4" aria-label="5. 합산"><span></span><i class="dotbadge" id="sumBadge" hidden></i></button>
   </nav>
   <div class="pager" id="pager">
 
@@ -73,6 +74,7 @@
       <div class="result">
         <div class="res-row"><span><b data-o="slot"></b> 중량</span><span class="big"><b data-o="weight">—</b><small>kg</small></span></div>
         <div class="res-row"><span>금액</span><span class="mid accent"><b data-o="amount">—</b><small>원</small></span></div>
+        <button type="button" class="sendbtn" data-send="weight"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>합산으로 보내기</button>
       </div>
     </div>
 
@@ -133,6 +135,7 @@
       <div class="result row">
         <div class="col"><span><b data-o="slot"></b> 견적 합계</span><span class="small">고무 <b data-o="totalKg">0.000</b> kg</span></div>
         <span class="big accent"><b data-o="total">0</b><small>원</small></span>
+        <button type="button" class="sendbtn wide" data-send="roll"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>합산으로 보내기</button>
       </div>
     </div>
 
@@ -268,7 +271,30 @@
       </div>
     </div>
 
+    <!-- ⑤ 합산 -->
+    <div class="panel" id="p-sum">
+      <header class="bar"><button type="button" class="back" data-back aria-label="뒤로"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"></path></svg></button><h2>합산</h2></header>
+      <div class="slotbar sumbar">
+        <span class="sumcount" id="sumCount">0개 항목</span>
+        <button type="button" class="clear" id="sumReset">초기화</button>
+      </div>
+      <div class="body tight">
+        <div id="sumEmpty" class="sumempty">
+          <svg aria-hidden="true" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 8h8"></path><path d="M8 12h8"></path><path d="M8 16h5"></path></svg>
+          <b>아직 보낸 값이 없어요</b>
+          <span>실중량이나 고무롤 견적에서 계산한 뒤<br><em>합산으로 보내기</em>를 누르면 여기에 쌓입니다.</span>
+        </div>
+        <div id="sumList" class="stack8"></div>
+        <p class="note">수량을 바꾸면 그 항목 무게·금액에 곱해집니다. 앱을 껐다 켜도 목록은 남아 있고, 초기화를 누르면 모두 지워집니다.</p>
+      </div>
+      <div class="result">
+        <div class="res-row"><span>최종 무게</span><span class="big"><b id="sumKg">0.000</b><small>kg</small></span></div>
+        <div class="res-row"><span>금액 합계</span><span class="mid accent"><b id="sumWon">0</b><small>원</small></span></div>
+      </div>
+    </div>
+
   </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </section>
 
 <!-- ============ 재질 · 비중 관리 ============ -->

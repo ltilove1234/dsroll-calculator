@@ -96,24 +96,32 @@
   };
 
   /* ---------------- ① 실중량 ---------------- */
+  // 파이프와 환봉은 입력값을 따로 기억합니다. 환봉 값은 앞에 'b_'를 붙여 저장합니다.
+  var wPre = function (s) { return s.shape === 'bar' ? 'b_' : ''; };
   var weightDef = {
-    inputs: ['od', 't', 'len', 'price'],
-    blank: function () { return { shape: 'pipe', mat: 0, sg: mats[0] ? mats[0].sg : '', od: '', t: '', len: '', price: '' }; },
+    inputs: ['od', 't', 'len', 'price', 'b_od', 'b_len', 'b_price'],
+    blank: function () {
+      var sg0 = mats[0] ? mats[0].sg : '';
+      return { shape: 'pipe', mat: 0, sg: sg0, od: '', t: '', len: '', price: '',
+               b_mat: 0, b_sg: sg0, b_od: '', b_len: '', b_price: '' };
+    },
+    key: function (k, s) { return k === 't' ? 't' : wPre(s) + k; },
     sync: function (c, s) {
+      var p = wPre(s);
       var box = $('[data-chips]', c.el);
       box.innerHTML = '';
       mats.forEach(function (m, i) {
         var b = document.createElement('button');
         b.type = 'button'; b.textContent = m.name;
-        if (s.mat === i) b.classList.add('on');
-        b.addEventListener('click', function () { s.mat = i; s.sg = m.sg; c.sync(); });
+        if (s[p + 'mat'] === i) b.classList.add('on');
+        b.addEventListener('click', function () { s[p + 'mat'] = i; s[p + 'sg'] = m.sg; c.sync(); });
         box.appendChild(b);
       });
       $('[data-show="pipe"]', c.el).hidden = s.shape !== 'pipe';
     },
     compute: function (c, s) {
-      var D = n(s.od), T = n(s.t), L = n(s.len), G = n(s.sg), P = n(s.price);
-      var pipe = s.shape === 'pipe';
+      var p = wPre(s), pipe = s.shape === 'pipe';
+      var D = n(s[p + 'od']), T = pipe ? n(s.t) : 0, L = n(s[p + 'len']), G = n(s[p + 'sg']), P = n(s[p + 'price']);
       var ready = D > 0 && L > 0 && (!pipe || T > 0);
       var w = pipe ? ((D * D - Math.pow(D - 2 * T, 2)) * 0.785 * G * L) / 1000000
                    : (D * D * 0.785 * G * L) / 1000000;
@@ -121,6 +129,14 @@
       c.out('amount', ready && P > 0 ? fmt(Math.round(w * P), 0) : '—');
       c.out('formula', pipe ? '중량 = (외경² − (외경−2×두께)²) × 0.785 × 비중 × 길이 ÷ 1,000,000'
                             : '중량 = 외경² × 0.785 × 비중 × 길이 ÷ 1,000,000');
+      var m = mats[s[p + 'mat']], mname = m && String(m.sg) === String(s[p + 'sg']) ? m.name : '비중 ' + s[p + 'sg'];
+      c.sendData = ready && w > 0 ? {
+        type: pipe ? 'pipe' : 'bar',
+        title: (pipe ? '파이프' : '환봉') + ' · ' + mname,
+        detail: 'Ø' + s[p + 'od'] + (pipe ? ' × t' + s.t : '') + ' × L' + s[p + 'len'] + ' · 비중 ' + s[p + 'sg'] + (P > 0 ? ' · kg ' + fmt(P, 0) + '원' : ''),
+        kg: w, won: P > 0 ? Math.round(w * P) : 0
+      } : null;
+      setSendable(c, 'weight');
     }
   };
 
@@ -145,6 +161,16 @@
       c.out('oQty', q(oKg, 3, 'kg'));   c.out('oAmt', fmt(oAmt, 0));
       c.out('totalKg', fmt(iKg + oKg, 3));
       c.out('total', fmt(aAmt + a2Amt + iAmt + oAmt, 0));
+      var parts = [];
+      if (iKg > 0) parts.push('속감 ' + fmt(iKg, 3) + 'kg (Ø' + s.iOD + '/' + (s.iC || 0) + ' × L' + s.iL + ')');
+      if (oKg > 0) parts.push('겉감 ' + fmt(oKg, 3) + 'kg (Ø' + s.oOD + '/' + (s.oC || 0) + ' × L' + s.oL + ')');
+      c.sendData = iKg + oKg > 0 ? {
+        type: 'rubber',
+        title: '고무 · ' + (iKg > 0 && oKg > 0 ? '속감 + 겉감' : iKg > 0 ? '속감' : '겉감'),
+        detail: parts.join(' + ') + ' · LOSS 두께 ' + (s.lossT || 0) + ' / 길이 ' + (s.lossL || 0),
+        kg: iKg + oKg, won: iAmt + oAmt
+      } : null;
+      setSendable(c, 'roll');
     }
   };
   // 비중을 바꾼 칸도 '사용 중'으로 표시
@@ -470,7 +496,7 @@
 
   function reloadWeightMats() {
     mats = loadMats();
-    weight.slots.forEach(function (s) { if (s.mat >= mats.length) { s.mat = 0; s.sg = mats[0] ? mats[0].sg : ''; } });
+    weight.slots.forEach(function (s) { ['', 'b_'].forEach(function (p) { if (s[p + 'mat'] >= mats.length) { s[p + 'mat'] = 0; s[p + 'sg'] = mats[0] ? mats[0].sg : ''; } }); });
     weight.sync();
   }
 
@@ -491,6 +517,71 @@
     var p = dots.findIndex(function (d) { return d.classList.contains('on'); });
     pager.scrollLeft = Math.max(0, p) * pager.clientWidth;
   });
+
+  /* ---------------- ⑤ 합산 ---------------- */
+  var SKEY = 'dsroll.sum';
+  var sumItems = (function () { try { var v = JSON.parse(localStorage.getItem(SKEY)); return Array.isArray(v) ? v : []; } catch (e) { return []; } })();
+  function saveSum() { try { localStorage.setItem(SKEY, JSON.stringify(sumItems)); } catch (e) {} }
+  var toastTimer = null;
+  function toast(msg) {
+    var t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('show'); }, 1600);
+  }
+  function renderSum() {
+    var list = $('#sumList'); list.innerHTML = '';
+    var totKg = 0, totWon = 0;
+    sumItems.forEach(function (it, i) {
+      var q = Math.max(0, Number(it.qty) || 0);
+      totKg += it.kg * q; totWon += it.won * q;
+      var el = document.createElement('div'); el.className = 'sumitem';
+      var tag = { pipe: '파이프', bar: '환봉', rubber: '고무' }[it.type] || '기타';
+      el.innerHTML =
+        '<div class="sumtop"><span class="sumtag t-' + it.type + '">' + tag + '</span>' +
+        '<div class="sumtitle"><b></b><small></small></div>' +
+        '<button type="button" class="sumdel"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg></button></div>' +
+        '<div class="sumbottom"><div class="qty"><button type="button" class="qm">−</button><input inputmode="numeric"><span>개</span><button type="button" class="qp">＋</button></div>' +
+        '<div class="sumval"><b></b><small></small></div></div>';
+      el.querySelector('.sumtitle b').textContent = (i + 1) + '. ' + it.title;
+      el.querySelector('.sumtitle small').textContent = it.detail + (it.from ? ' · ' + it.from : '');
+      el.querySelector('.sumdel').setAttribute('aria-label', (i + 1) + '번 항목 삭제');
+      var qi = el.querySelector('.qty input'); qi.value = it.qty; qi.setAttribute('aria-label', (i + 1) + '번 항목 수량');
+      el.querySelector('.qm').setAttribute('aria-label', '수량 줄이기'); el.querySelector('.qp').setAttribute('aria-label', '수량 늘리기');
+      el.querySelector('.sumval b').textContent = fmt(it.kg * q, 3) + ' kg';
+      el.querySelector('.sumval small').textContent = it.won > 0 ? fmt(it.won * q, 0) + ' 원' : '금액 없음';
+      var setQ = function (v) { it.qty = Math.max(1, Math.round(v) || 1); saveSum(); renderSum(); };
+      el.querySelector('.qm').addEventListener('click', function () { setQ((Number(it.qty) || 1) - 1); });
+      el.querySelector('.qp').addEventListener('click', function () { setQ((Number(it.qty) || 1) + 1); });
+      qi.addEventListener('change', function () { setQ(Number(qi.value)); });
+      el.querySelector('.sumdel').addEventListener('click', function () { sumItems.splice(i, 1); saveSum(); renderSum(); toast('항목을 지웠어요'); });
+      list.appendChild(el);
+    });
+    $('#sumEmpty').hidden = sumItems.length > 0;
+    $('#sumCount').textContent = sumItems.length + '개 항목';
+    $('#sumKg').textContent = fmt(totKg, 3);
+    $('#sumWon').textContent = fmt(totWon, 0);
+    var badge = $('#sumBadge'); badge.hidden = !sumItems.length; badge.textContent = sumItems.length;
+    $('#sumReset').disabled = !sumItems.length;
+  }
+  function setSendable(c, k) {
+    var b = c.el.querySelector('[data-send="' + k + '"]');
+    if (b) b.disabled = !c.sendData;
+  }
+  function sendFrom(c) {
+    if (!c.sendData) { toast('먼저 값을 입력해 계산해 주세요'); return; }
+    var d = c.sendData;
+    sumItems.push({ type: d.type, title: d.title, detail: d.detail, kg: d.kg, won: d.won, qty: 1, from: (c.cur + 1) + '번 칸' });
+    saveSum(); renderSum();
+    pager.scrollTo({ left: 4 * pager.clientWidth, behavior: 'smooth' });
+    toast(d.title + ' ' + fmt(d.kg, 3) + 'kg 보냈어요');
+  }
+  $('[data-send="weight"]').addEventListener('click', function () { sendFrom(weight); });
+  $('[data-send="roll"]').addEventListener('click', function () { sendFrom(roll); });
+  $('#sumReset').addEventListener('click', function () {
+    if (!sumItems.length) return;
+    sumItems = []; saveSum(); renderSum(); toast('합산 목록을 초기화했어요');
+  });
+  renderSum();
+  setSendable(weight, 'weight'); setSendable(roll, 'roll');
 
   /* ---------------- 재질 관리 화면 ---------------- */
   var draft = [], dirty = false;
