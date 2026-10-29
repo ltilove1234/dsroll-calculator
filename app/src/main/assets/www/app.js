@@ -191,7 +191,7 @@
   /* 홈 가공 롤 그림 계산 (측면도). k = 확대 배율.
      좌표는 그림 단위(가로 350 × 세로 240)이고, 글자·눈금 크기는 1/k 로 줄여서
      확대해도 화면에서는 같은 크기로 보이게 합니다. */
-  function grooveGeometry(D, deg, Z, B, k, refX) {
+  function grooveGeometry(D, deg, Z, B, k, refX, view) {
     k = k || 1;
     var u = 1 / k;
     var th = deg * Math.PI / 180;
@@ -219,18 +219,29 @@
     var spread = R * (Math.PI / 2) * t;
     var cc = Math.max(32, (refX || 175) - Apx / 2);
     var kmin = Math.ceil((X0 - spread - Dpx - cc) / Apx), kmax = Math.floor((X1 + spread - cc) / Apx);
-    var steps = 16 * Math.min(8, Math.ceil(k)), path = '';
+    var path = '';
     g.thin = Dpx * k < 0.8;
+    // 확대했을 때는 화면에 보이는 부분만 촘촘하게 다시 그립니다 (50배에서도 홈 가장자리가 매끄럽게)
+    var vw = view || { x0: 0, x1: 350, y0: 0, y1: 240 }, pad = 4 / k;
+    var cl = function (v) { return Math.max(-1, Math.min(1, v)); };
+    var phLo = Math.asin(cl((CY - (vw.y1 + pad)) / R)), phHi = Math.asin(cl((CY - (vw.y0 - pad)) / R));
+    var steps = 48;
     var edge = function (x0, rev) {
       var p = [];
       for (var i = 0; i <= steps; i++) {
-        var j = rev ? steps - i : i, ph = -Math.PI / 2 + (Math.PI * j) / steps;
+        var j = rev ? steps - i : i, ph = phLo + (phHi - phLo) * j / steps;
         p.push(P(x0 + R * ph * t, CY - R * Math.sin(ph)));
       }
       return p;
     };
-    for (var q = kmin, cnt = 0; q <= kmax && cnt < 400; q++, cnt++) {
-      var xq = cc + q * Apx, L = edge(xq, false);
+    // 좌우 대칭(우나사·스파이럴·격자)으로 뒤집어 그리는 경우까지 생각해서 보이는 가로 범위를 잡습니다
+    var inView = function (a, b) { return (b >= vw.x0 - pad && a <= vw.x1 + pad) || (350 - a >= vw.x0 - pad && 350 - b <= vw.x1 + pad); };
+    var spanLo = R * Math.min(phLo * t, phHi * t), spanHi = R * Math.max(phLo * t, phHi * t);
+    for (var q = kmin, cnt = 0; q <= kmax && cnt < 600; q++) {
+      var xq = cc + q * Apx;
+      if (!inView(xq + spanLo, xq + spanHi + Dpx)) continue;
+      cnt++;
+      var L = edge(xq, false);
       path += g.thin ? 'M' + L.join(' L') + ' ' : 'M' + L.join(' L') + ' L' + edge(xq + Dpx, true).join(' L') + ' Z ';
     }
     g.groove = path || 'M0 0';
@@ -293,12 +304,12 @@
     // 지금 배율에서 읽기 어려운지, 읽기 좋은 배율은 얼마인지
     g.small = !g.axialOk || !g.perpOk || Dpx * k < 5 || (B > 0 && bpx * k < 6);
     var want = Math.max(110 / Math.max(Cpx, 0.01), 14 / Math.max(Dpx, 0.01), 1.5);
-    g.focusK = Math.min(12, Math.max(1, Math.min(want, 300 / Math.max(Apx, 0.01))));
+    g.focusK = Math.min(50, Math.max(1, Math.min(want, 300 / Math.max(Apx, 0.01))));
     g.focusX = cc + Math.max(Apx, Cpx * cs) * 0.45; g.focusY = CY + Cpx * sn * 0.3;
     return g;
   }
 
-  var KMAX = 12;
+  var KMAX = 50;
   function clampView() {
     var w = 350 / fig.k, h = 240 / fig.k;
     fig.cx = Math.min(350 - w / 2, Math.max(w / 2, fig.cx));
@@ -309,7 +320,10 @@
     var c = L.c, v = L, k = fig.k;
     // 홈 모양: L 좌나사, R 우나사(좌나사의 좌우 대칭), S 스파이럴(가운데서 양쪽으로 반대 방향, ∧ 모양), X 격자(좌+우)
     var pat = v.pat, PATN = { L: '좌나사', R: '우나사', S: '스파이럴', X: '격자' };
-    var g = grooveGeometry(v.D, v.deg, v.Z, v.B, k, pat === 'S' ? 97.5 : 175);
+    clampView();
+    var vww = 350 / k, vhh = 240 / k;
+    var g = grooveGeometry(v.D, v.deg, v.Z, v.B, k, pat === 'S' ? 97.5 : 175,
+      { x0: fig.cx - vww / 2, x1: fig.cx + vww / 2, y0: fig.cy - vhh / 2, y1: fig.cy + vhh / 2 });
     var mir = pat === 'R';                       // 치수·각도도 거울처럼 뒤집어 표시
     var MT = 'matrix(-1 0 0 1 350 0)';
     var mx = function (x) { return mir ? 350 - x : x; };
@@ -443,8 +457,8 @@
       zoomAt(fig.k * (e.deltaY < 0 ? 1.25 : 0.8), p.x, p.y, p.sx, p.sy);
     }, { passive: false });
     var step = function (f) { zoomAt(fig.k * f, fig.cx, fig.cy, 0.5, 0.5); };
-    document.getElementById('zIn').addEventListener('click', function () { step(1.6); });
-    document.getElementById('zOut').addEventListener('click', function () { step(1 / 1.6); });
+    document.getElementById('zIn').addEventListener('click', function () { step(2); });
+    document.getElementById('zOut').addEventListener('click', function () { step(0.5); });
     document.getElementById('zFit').addEventListener('click', function () { fig.k = 1; fig.cx = 175; fig.cy = 120; renderFig(); });
     document.getElementById('zFocus').addEventListener('click', function () {
       var f = fig.focus; if (!f) return;
