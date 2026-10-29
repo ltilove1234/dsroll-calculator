@@ -647,15 +647,23 @@
     if (kpInput !== el) el.dataset.fresh = el.value !== '' ? '1' : '';   // 값이 있는 칸은 첫 숫자를 누르면 새로 입력
     kpInput = el; el.classList.add('kp-on');
     if (kp.hidden) { kp.hidden = false; kpSetH(); }
+    // 휴대폰 '뒤로가기'를 누르면 화면은 그대로 두고 키패드만 닫히도록, 키패드가 열릴 때 기록을 한 칸 남겨 둡니다
+    if (!kpPushed) { try { history.pushState({ kp: 1 }, ''); kpPushed = true; } catch (er) {} }
     setTimeout(function () { try { el.scrollIntoView({ block: 'nearest' }); } catch (er) {} }, 30);
   }
-  function kpClose() {
+  var kpPushed = false;
+  function kpClose(fromBack) {
     if (kpInput) { kpInput.classList.remove('kp-on'); var x = kpInput; kpInput = null; x.dispatchEvent(new Event('change', { bubbles: true })); x.blur(); }
     kp.hidden = true; kpSetH();
+    // 완료·바깥 누르기로 닫았으면 남겨 둔 기록도 지웁니다 (뒤로가기로 닫힌 경우는 이미 지워짐)
+    if (kpPushed) { kpPushed = false; if (!fromBack) { try { history.back(); } catch (er) {} } }
   }
+  window.addEventListener('popstate', function () {
+    if (kpPushed) { kpPushed = false; if (!kp.hidden) kpClose(true); }
+  });
   document.addEventListener('focusin', function (e) {
     if (isNum(e.target)) { markNum(e.target); kpOpen(e.target); }
-    else if (e.target.tagName === 'INPUT') { kp.hidden = true; kpSetH(); }
+    else if (e.target.tagName === 'INPUT' && !kp.hidden) { var keep = e.target; kpClose(); setTimeout(function () { keep.focus(); }, 0); }
   });
   // 키패드나 숫자 칸 밖을 누르면 닫기 (누른 버튼이 먼저 동작한 뒤에 닫아서, 화면이 움직여 버튼이 빗나가지 않게)
   // 숫자 칸을 누른 순간 키패드가 올라오며 화면이 움직이면, 손을 뗄 때의 'click'이 다른 곳에 떨어질 수 있어서
@@ -689,7 +697,7 @@
     el.value = v;
     el.dispatchEvent(new Event('input', { bubbles: true }));
   });
-  window.addEventListener('hashchange', function () { if (!kp.hidden) kpClose(); });
+  window.addEventListener('hashchange', function () { if (!kp.hidden) { kpPushed = false; kpClose(true); } });
 
   /* ---------------- 화면 이동 (안드로이드 뒤로가기 지원) ---------------- */
   var screens = { '': $('#scr-splash'), calc: $('#scr-calc'), materials: $('#scr-materials') };
