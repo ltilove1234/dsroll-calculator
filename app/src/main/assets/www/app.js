@@ -633,8 +633,24 @@
     if (!screens[name]) name = '';
     Object.keys(screens).forEach(function (k) { screens[k].classList.toggle('active', k === name); });
     if (name === 'materials') openMats();
-    if (name === 'calc') { reloadWeightMats(); markDot(); }
+    if (name === 'calc') {
+      reloadWeightMats();
+      if (goPage != null) {   // 첫 화면 이름표로 들어온 경우 그 계산기 장으로 바로 이동
+        var gp = goPage; goPage = null;
+        pager.style.scrollBehavior = 'auto';
+        pager.scrollLeft = gp * pager.clientWidth;
+        requestAnimationFrame(function () { pager.scrollLeft = gp * pager.clientWidth; pager.style.scrollBehavior = ''; markDot(); });
+      }
+      markDot();
+    }
   }
+  var goPage = null;
+  $$('[data-goto]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      goPage = Number(b.dataset.goto);
+      if (location.hash === '#calc') route(); else location.hash = 'calc';
+    });
+  });
   window.addEventListener('hashchange', route);
   $$('[data-go]').forEach(function (b) {
     b.addEventListener('click', function () { location.hash = b.dataset.go; });

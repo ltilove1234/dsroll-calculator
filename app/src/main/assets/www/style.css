@@ -27,8 +27,10 @@ h1,h2,h3,p{margin:0}
 .hero-band i{flex:3;background:var(--brand)}.hero-band b{flex:1;background:#3A3D42}
 .splash-body{flex:1;padding:26px 24px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;background:#F4F2EE}
 .tagline{font-size:17px;font-weight:700;color:var(--sub);line-height:1.6}
-.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
-.tags span{font-size:12px;font-weight:700;padding:6px 10px;border-radius:14px;background:#fff;border:1px solid #DCD7CE;color:#3A3D42}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.tags button{display:inline-flex;align-items:center;gap:4px;min-height:40px;font-size:13px;font-weight:700;padding:0 12px;border-radius:20px;background:#fff;border:1px solid #DCD7CE;color:#3A3D42}
+.tags button::after{content:'›';font-size:15px;color:var(--brand)}
+.tags button:active{background:#F4E3E4;border-color:var(--brand)}
 .btn-primary{display:flex;align-items:center;justify-content:center;gap:10px;height:60px;border:none;border-radius:16px;background:var(--brand);color:#fff;font-size:18px;font-weight:800;box-shadow:0 6px 16px rgba(195,20,30,.25);width:100%}
 .btn-primary:active{filter:brightness(.92)}
 .btn-secondary{display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:16px;border:1px solid var(--field);background:#fff;font-size:15px;font-weight:700;width:100%}
@@ -199,3 +201,8 @@ h1,h2,h3,p{margin:0}
 .sumval small{font-size:12px;color:var(--muted)}
 .toast{position:absolute;left:50%;bottom:250px;transform:translate(-50%,10px);background:#1E2124;color:#fff;font-size:14px;font-weight:700;padding:10px 16px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap;z-index:9}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* 단가 칸은 넓게 (금액이 잘리지 않게) */
+.grid3 .span3,.grid2 .span3{grid-column:1/-1}
+.grid2.g8{gap:8px}
+.grid3 .span2c{grid-column:span 2}
