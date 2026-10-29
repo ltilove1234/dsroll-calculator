@@ -10,15 +10,28 @@ android {
         applicationId 'kr.co.dsroll.calculator'
         minSdk 24
         targetSdk 34
-        versionCode 1
-        versionName '1.0'
+        // 새 APK를 낼 때마다 숫자를 올리면 휴대폰에서 '업데이트'로 설치됩니다.
+        versionCode 3
+        versionName '1.2'
+    }
+
+    signingConfigs {
+        // 사내 배포용 고정 서명 키. 항상 같은 키로 서명해야 기존 앱 위에 업데이트 설치가 됩니다.
+        dsroll {
+            storeFile file('dsroll-release.keystore')
+            storePassword 'dsroll2026'
+            keyAlias 'dsroll'
+            keyPassword 'dsroll2026'
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            // 사내 배포용: 별도 키가 없으면 디버그 키로 서명합니다.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.dsroll
+        }
+        debug {
+            signingConfig signingConfigs.dsroll
         }
     }
 
