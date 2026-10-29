@@ -501,10 +501,15 @@
   }
 
   /* ---------------- 넘기기(페이저) ---------------- */
-  var pager = $('#pager'), dots = $$('.dots button');
+  var pager = $('#pager'), dots = $$('.tabrow [data-page]');
   function markDot() {
     var p = Math.round(pager.scrollLeft / Math.max(1, pager.clientWidth));
-    dots.forEach(function (d, i) { d.classList.toggle('on', i === p); d.setAttribute('aria-current', i === p ? 'page' : 'false'); });
+    dots.forEach(function (d, i) { d.classList.toggle('on', i === p); d.setAttribute('aria-selected', i === p ? 'true' : 'false'); });
+    var on = dots[p], row = on && on.parentNode;   // 선택된 탭이 탭 줄 밖이면 탭 줄만 살짝 밀어서 보이게
+    if (on && row) {
+      if (on.offsetLeft < row.scrollLeft) row.scrollLeft = on.offsetLeft - 4;
+      else if (on.offsetLeft + on.offsetWidth > row.scrollLeft + row.clientWidth) row.scrollLeft = on.offsetLeft + on.offsetWidth - row.clientWidth + 4;
+    }
   }
   pager.addEventListener('scroll', markDot, { passive: true });
   dots.forEach(function (d) {
@@ -652,8 +657,8 @@
     if (isNum(e.target)) { markNum(e.target); kpOpen(e.target); }
     else if (e.target.tagName === 'INPUT') { kp.hidden = true; kpSetH(); }
   });
-  // 키패드나 숫자 칸 밖을 누르면 닫기
-  document.addEventListener('pointerdown', function (e) {
+  // 키패드나 숫자 칸 밖을 누르면 닫기 (누른 버튼이 먼저 동작한 뒤에 닫아서, 화면이 움직여 버튼이 빗나가지 않게)
+  document.addEventListener('click', function (e) {
     if (kp.hidden || kp.contains(e.target) || isNum(e.target)) return;
     kpClose();
   });

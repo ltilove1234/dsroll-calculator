@@ -40,12 +40,15 @@
 
 <!-- ============ 계산기 (옆으로 넘기기) ============ -->
 <section id="scr-calc" class="screen" aria-label="계산기">
-  <nav class="dots" aria-label="계산기 넘기기">
-    <button type="button" data-page="0" aria-label="1. 실중량"><span></span></button>
-    <button type="button" data-page="1" aria-label="2. 고무롤 견적"><span></span></button>
-    <button type="button" data-page="2" aria-label="3. 홈 가공"><span></span></button>
-    <button type="button" data-page="3" aria-label="4. 간편 계산"><span></span></button>
-    <button type="button" data-page="4" aria-label="5. 합산"><span></span><i class="dotbadge" id="sumBadge" hidden></i></button>
+  <nav class="tabs" aria-label="계산기 넘기기">
+    <button type="button" class="back" data-back aria-label="처음 화면으로"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"></path></svg></button>
+    <div class="tabrow" role="tablist">
+      <button type="button" role="tab" data-page="0">실중량</button>
+      <button type="button" role="tab" data-page="1">고무롤 견적</button>
+      <button type="button" role="tab" data-page="2">홈 가공</button>
+      <button type="button" role="tab" data-page="3">간편 계산</button>
+      <button type="button" role="tab" data-page="4">합산<i class="dotbadge" id="sumBadge" hidden></i></button>
+    </div>
   </nav>
   <div class="pager" id="pager">
 
@@ -317,9 +320,9 @@
 
 <!-- 앱 전용 작은 숫자 키패드 (휴대폰 기본 키보드 대신) -->
 <div id="kp" class="kp" role="group" aria-label="숫자 키패드" hidden>
-  <button type="button" data-kp="7">7</button><button type="button" data-kp="8">8</button><button type="button" data-kp="9">9</button><button type="button" data-kp="back" class="fn" aria-label="한 글자 지우기">⌫</button>
+  <button type="button" data-kp="1">1</button><button type="button" data-kp="2">2</button><button type="button" data-kp="3">3</button><button type="button" data-kp="back" class="fn" aria-label="한 글자 지우기">⌫</button>
   <button type="button" data-kp="4">4</button><button type="button" data-kp="5">5</button><button type="button" data-kp="6">6</button><button type="button" data-kp="clear" class="fn" aria-label="칸 비우기">C</button>
-  <button type="button" data-kp="1">1</button><button type="button" data-kp="2">2</button><button type="button" data-kp="3">3</button><button type="button" data-kp="next" class="fn" aria-label="다음 칸">다음</button>
+  <button type="button" data-kp="7">7</button><button type="button" data-kp="8">8</button><button type="button" data-kp="9">9</button><button type="button" data-kp="next" class="fn" aria-label="다음 칸">다음</button>
   <button type="button" data-kp="0">0</button><button type="button" data-kp="00">00</button><button type="button" data-kp=".">.</button><button type="button" data-kp="done" class="ok" aria-label="입력 완료">완료</button>
 </div>
 <script src="app.js"></script>

@@ -46,10 +46,6 @@ h1,h2,h3,p{margin:0}
 .pager{flex:1;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none}
 .pager::-webkit-scrollbar{display:none}
 .panel{flex:0 0 100%;width:100%;height:100%;display:flex;flex-direction:column;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden}
-.dots{position:absolute;top:8px;right:8px;z-index:5;display:flex;align-items:center;background:#E4E1DA;border-radius:22px;padding:0 4px}
-.dots button{width:30px;height:44px;border:none;background:transparent;padding:0;display:flex;align-items:center;justify-content:center}
-.dots span{display:block;width:8px;height:8px;border-radius:4px;background:#8A867D;transition:width .2s}
-.dots button.on span{width:22px;background:var(--accent)}
 
 /* ---------- 계산 칸 1~5 ---------- */
 .slotbar{display:flex;align-items:center;gap:6px;padding:0 16px 12px;flex-shrink:0}
@@ -175,8 +171,7 @@ h1,h2,h3,p{margin:0}
 .sendbtn:disabled{background:#3A3F45;color:#7C8188}
 .result.row{flex-wrap:wrap;row-gap:12px}
 .result.row .sendbtn.wide{flex:1 0 100%}
-.dots button{position:relative}
-.dotbadge{position:absolute;top:8px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--brand);color:#fff;font-style:normal;font-size:10px;font-weight:800;line-height:16px;text-align:center}
+.dotbadge{position:absolute;top:2px;right:0;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--brand);color:#fff;font-style:normal;font-family:var(--mono);font-size:10px;font-weight:800;line-height:16px;text-align:center}
 .sumbar{justify-content:space-between;padding-left:20px}
 .sumcount{font-size:14px;font-weight:700;color:var(--sub)}
 .sumempty{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:40px 16px;color:var(--sub);background:#fff;border:1px dashed var(--field);border-radius:14px}
@@ -217,3 +212,12 @@ h1,h2,h3,p{margin:0}
 .kp button.fn{background:#ECE9E2;font-family:inherit;font-size:15px}
 .kp button.ok{background:var(--accent);color:#fff;font-family:inherit;font-size:15px}
 input.kp-on{border-color:var(--accent)!important;box-shadow:0 0 0 3px var(--accent-soft)!important}
+
+/* ---------- 계산기 맨 위 글씨 탭 ---------- */
+.tabs{display:flex;align-items:center;gap:0;height:56px;padding:0 6px 0 0;flex-shrink:0;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabrow{flex:1;min-width:0;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabrow::-webkit-scrollbar{display:none}
+.tabrow button{position:relative;flex:1 0 auto;height:40px;padding:0 7px;border:none;border-radius:20px;background:transparent;font-size:14px;font-weight:700;color:var(--sub);white-space:nowrap}
+.tabrow button.on{background:var(--ink);color:#fff}
+#scr-calc .panel > header.bar{display:none}
+#scr-calc .slotbar{padding-top:12px}
