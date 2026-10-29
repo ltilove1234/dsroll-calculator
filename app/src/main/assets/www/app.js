@@ -304,12 +304,12 @@
     // 지금 배율에서 읽기 어려운지, 읽기 좋은 배율은 얼마인지
     g.small = !g.axialOk || !g.perpOk || Dpx * k < 5 || (B > 0 && bpx * k < 6);
     var want = Math.max(110 / Math.max(Cpx, 0.01), 14 / Math.max(Dpx, 0.01), 1.5);
-    g.focusK = Math.min(150, Math.max(1, Math.min(want, 300 / Math.max(Apx, 0.01))));
+    g.focusK = Math.min(200, Math.max(1, Math.min(want, 300 / Math.max(Apx, 0.01))));
     g.focusX = cc + Math.max(Apx, Cpx * cs) * 0.45; g.focusY = CY + Cpx * sn * 0.3;
     return g;
   }
 
-  var KMAX = 150;
+  var KMAX = 200;
   function clampView() {
     var w = 350 / fig.k, h = 240 / fig.k;
     fig.cx = Math.min(350 - w / 2, Math.max(w / 2, fig.cx));
