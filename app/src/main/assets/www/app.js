@@ -658,7 +658,12 @@
     else if (e.target.tagName === 'INPUT') { kp.hidden = true; kpSetH(); }
   });
   // 키패드나 숫자 칸 밖을 누르면 닫기 (누른 버튼이 먼저 동작한 뒤에 닫아서, 화면이 움직여 버튼이 빗나가지 않게)
+  // 숫자 칸을 누른 순간 키패드가 올라오며 화면이 움직이면, 손을 뗄 때의 'click'이 다른 곳에 떨어질 수 있어서
+  // 누르기 시작한 곳(pointerdown)이 숫자 칸·키패드였으면 닫지 않습니다.
+  var downOnNum = false;
+  document.addEventListener('pointerdown', function (e) { downOnNum = isNum(e.target) || kp.contains(e.target); }, true);
   document.addEventListener('click', function (e) {
+    if (downOnNum) { downOnNum = false; return; }
     if (kp.hidden || kp.contains(e.target) || isNum(e.target)) return;
     kpClose();
   });
