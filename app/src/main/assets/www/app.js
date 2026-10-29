@@ -199,7 +199,7 @@
     var A = ok ? (Math.tan(th) * (D * 3.14 / 2) * 2) / Z : NaN;
     var Dg = B / Math.cos(th), E = A - Dg, C = Math.sin(Math.PI / 2 - th) * A, Cr = C - B;
     var V = ok ? (D * 3.14) / Z : NaN;
-    var r1 = function (x) { return Math.round(x * 100) / 100; };
+    var r1 = function (x) { return Math.round(x * 1000) / 1000; };
     var P = function (x, y) { return r1(x) + ' ' + r1(y); };
     var g = {
       ok: ok, A: A, Dg: Dg, E: E, C: C, Cr: Cr, V: V, drawable: ok && deg < 89, u: u,
@@ -304,12 +304,12 @@
     // 지금 배율에서 읽기 어려운지, 읽기 좋은 배율은 얼마인지
     g.small = !g.axialOk || !g.perpOk || Dpx * k < 5 || (B > 0 && bpx * k < 6);
     var want = Math.max(110 / Math.max(Cpx, 0.01), 14 / Math.max(Dpx, 0.01), 1.5);
-    g.focusK = Math.min(50, Math.max(1, Math.min(want, 300 / Math.max(Apx, 0.01))));
+    g.focusK = Math.min(100, Math.max(1, Math.min(want, 300 / Math.max(Apx, 0.01))));
     g.focusX = cc + Math.max(Apx, Cpx * cs) * 0.45; g.focusY = CY + Cpx * sn * 0.3;
     return g;
   }
 
-  var KMAX = 50;
+  var KMAX = 100;
   function clampView() {
     var w = 350 / fig.k, h = 240 / fig.k;
     fig.cx = Math.min(350 - w / 2, Math.max(w / 2, fig.cx));
@@ -335,7 +335,7 @@
     var el = function (id) { return document.getElementById(id); };
     var set = function (id, attrs) { var e = el(id); for (var a in attrs) e.setAttribute(a, attrs[a]); };
     var txt = function (id, s) { el(id).textContent = s; };
-    var r2 = function (x) { return Math.round(x * 100) / 100; };
+    var r2 = function (x) { return Math.round(x * 1000) / 1000; };
     var degTxt = 'θ ' + fmt(v.deg, v.deg % 1 ? 1 : 0) + '°';
 
     clampView();
